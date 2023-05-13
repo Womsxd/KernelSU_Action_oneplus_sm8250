@@ -1,8 +1,8 @@
 name: Build Kernel MeteoricSU
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 2,6'
+  watch:
+    types: [started]
 
 jobs:
   build:
