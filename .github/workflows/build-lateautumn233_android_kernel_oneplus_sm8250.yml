@@ -44,7 +44,7 @@ jobs:
 
       - name: Download Clang-aosp and Gcc-aosp
         if: env.USE_CUSTOM_CLANG == 'false'
-        uses: actions/cache@v1.2.1
+        uses: actions/cache@v3.3.1
         with:
           path: |
             $GITHUB_WORKSPACE/kernel_workspace/clang-aosp
@@ -130,7 +130,7 @@ jobs:
           ccache --max-size=5GB  # 设置ccache缓存大小
 
       - name: Restore ccache cache
-        uses: actions/cache@v1.2.1
+        uses: actions/cache@v3.3.1
         with:
           path: /usr/lib/ccache
           key: ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
