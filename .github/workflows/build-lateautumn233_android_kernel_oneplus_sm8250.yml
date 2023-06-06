@@ -44,6 +44,14 @@ jobs:
 
     - name: Download Clang-aosp and Gcc-aosp
       if: env.USE_CUSTOM_CLANG == 'false'
+      uses: actions/cache@v2
+      with:
+        path: |
+          ${{ runner.workspace }}/kernel_workspace/clang-aosp
+          ${{ runner.workspace }}/kernel_workspace/gcc-aosp
+        key: ${{ runner.os }}-clang-gcc-${{ env.CLANG_BRANCH }}-${{ env.CLANG_VERSION }}
+        restore-keys: |
+          ${{ runner.os }}-clang-gcc-${{ env.CLANG_BRANCH }}-${{ env.CLANG_VERSION }}
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir clang-aosp
@@ -108,14 +116,39 @@ jobs:
         fi
         echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
 
+  - name: Install ccache
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y ccache
+
+  - name: Set up ccache
+    run: |
+      export PATH="/usr/lib/ccache:$PATH"
+      ccache --max-size=5GB  # 设置ccache缓存大小
+  
+  - name: Restore ccache cache
+    uses: actions/cache@v2
+    with:
+      path: /usr/lib/ccache
+      key: ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
+
     - name: Build kernel
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$PATH
         export KBUILD_BUILD_HOST=Github-Action
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
-        make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} ${{ env.CUSTOM_CLANG_BUILD_COMMAND }} CC=clang ${{ env.BUILD_EXTRA_COMMAND }} ${{ env.KERNEL_DEFCONFIG }}
-        make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} ${{ env.CUSTOM_CLANG_BUILD_COMMAND }} CC=clang ${{ env.BUILD_EXTRA_COMMAND }}
+        export CC="ccache clang"  # 使用ccache来调用clang编译器
+        make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} ${{ env.CUSTOM_CLANG_BUILD_COMMAND }} CC=$CC ${{ env.BUILD_EXTRA_COMMAND }} ${{ env.KERNEL_DEFCONFIG }}
+        make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} ${{ env.CUSTOM_CLANG_BUILD_COMMAND }} CC=$CC ${{ env.BUILD_EXTRA_COMMAND }}
+
+  - name: Save ccache cache
+    uses: actions/cache@v2
+    with:
+      path: /usr/lib/ccache
+      key: ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
+      restore-keys: |
+        ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
 
     - name: Check a kernel output files
       run: |
