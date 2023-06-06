@@ -52,6 +52,9 @@ jobs:
           key: ${{ runner.os }}-clang-gcc-${{ env.CLANG_BRANCH }}-${{ env.CLANG_VERSION }}
           restore-keys: |
             ${{ runner.os }}-clang-gcc-${{ env.CLANG_BRANCH }}-${{ env.CLANG_VERSION }}
+
+      - name: Setup Clang-aosp and Gcc-aosp
+        if: env.USE_CUSTOM_CLANG == 'false'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
           mkdir clang-aosp
@@ -60,7 +63,7 @@ jobs:
           mkdir gcc-aosp
           wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
           tar -C gcc-aosp/ -zxvf android-12.1.0_r27.tar.gz
-
+  
       - name: Download Custom-Clang
         if: env.USE_CUSTOM_CLANG == 'true'
         run: |
