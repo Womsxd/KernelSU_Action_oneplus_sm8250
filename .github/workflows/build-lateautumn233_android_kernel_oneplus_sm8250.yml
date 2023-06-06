@@ -47,8 +47,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ${{ runner.workspace }}/kernel_workspace/clang-aosp
-            ${{ runner.workspace }}/kernel_workspace/gcc-aosp
+            $GITHUB_WORKSPACE/kernel_workspace/clang-aosp
+            $GITHUB_WORKSPACE/kernel_workspace/gcc-aosp
           key: ${{ runner.os }}-clang-gcc-${{ env.CLANG_BRANCH }}-${{ env.CLANG_VERSION }}
           restore-keys: |
             ${{ runner.os }}-clang-gcc-${{ env.CLANG_BRANCH }}-${{ env.CLANG_VERSION }}
@@ -62,16 +62,7 @@ jobs:
           tar -C clang-aosp/ -zxvf clang-${{ env.CLANG_VERSION }}.tar.gz
           mkdir gcc-aosp
           wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-          tar -C gcc-aosp/ -zxvf android-12.1.0_r27.tar.gz
-          ls -l
-          pwd
-      
-      - name: Check files in clang-aosp directory
-        run: |
-            echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-            echo "runner.workspace: ${{ runner.workspace }}"
-            ls -l ${{ runner.workspace }}/kernel_workspace/clang-aosp
-        
+          tar -C gcc-aosp/ -zxvf android-12.1.0_r27.tar.gz        
   
       - name: Download Custom-Clang
         if: env.USE_CUSTOM_CLANG == 'true'
