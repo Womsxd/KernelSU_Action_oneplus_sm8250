@@ -1,4 +1,5 @@
 name: Build Kernel lateautumn233_android_kernel_oneplus_sm8250
+
 on:
   workflow_dispatch:
   watch:
@@ -116,21 +117,21 @@ jobs:
         fi
         echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
 
-  - name: Install ccache
-    run: |
-      sudo apt-get update
-      sudo apt-get install -y ccache
+    - name: Install ccache
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ccache
 
-  - name: Set up ccache
-    run: |
-      export PATH="/usr/lib/ccache:$PATH"
-      ccache --max-size=5GB  # 设置ccache缓存大小
+    - name: Set up ccache
+      run: |
+        export PATH="/usr/lib/ccache:$PATH"
+        ccache --max-size=5GB  # 设置ccache缓存大小
   
-  - name: Restore ccache cache
-    uses: actions/cache@v2
-    with:
-      path: /usr/lib/ccache
-      key: ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
+    - name: Restore ccache cache
+      uses: actions/cache@v2
+      with:
+        path: /usr/lib/ccache
+        key: ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
 
     - name: Build kernel
       run: |
@@ -142,13 +143,13 @@ jobs:
         make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} ${{ env.CUSTOM_CLANG_BUILD_COMMAND }} CC=$CC ${{ env.BUILD_EXTRA_COMMAND }} ${{ env.KERNEL_DEFCONFIG }}
         make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} ${{ env.CUSTOM_CLANG_BUILD_COMMAND }} CC=$CC ${{ env.BUILD_EXTRA_COMMAND }}
 
-  - name: Save ccache cache
-    uses: actions/cache@v2
-    with:
-      path: /usr/lib/ccache
-      key: ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
-      restore-keys: |
-        ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
+    - name: Save ccache cache
+      uses: actions/cache@v2
+      with:
+        path: /usr/lib/ccache
+        key: ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
+        restore-keys: |
+          ccache-${{ runner.os }}-${{ env.CLANG_VERSION }}
 
     - name: Check a kernel output files
       run: |
